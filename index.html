@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M365 Minus</title>
+<meta name="description" content="A day off Microsoft 365 for every major North American outage.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500;700;800&display=swap">
+<style>
+  :root{
+    color-scheme: dark;
+    --bg:        #0b0e14;
+    --bg-2:      #0f1420;
+    --surface:   #141a26;
+    --surface-2: #1a2231;
+    --line:      #232d40;
+    --text:      #e7ecf5;
+    --muted:     #8b96ab;
+    --faint:     #5d6a80;
+    --blue:      #3a97e6;   /* the Microsoft nod */
+    --blue-dim:  #2b6fb0;
+    --amber:     #f5a623;   /* the color of a day getting eaten */
+    --amber-2:   #ff8a3d;
+    --red:       #e5484d;   /* severe tier */
+    --green:     #46c07a;
+    --radius:    14px;
+    --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+    --sans:'IBM Plex Sans',system-ui,-apple-system,Segoe UI,sans-serif;
+    --display:'Bricolage Grotesque','IBM Plex Sans',system-ui,sans-serif;
+  }
+
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1200px 700px at 50% -8%, rgba(58,151,230,.10), transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    line-height:1.55;
+    padding:0 20px;
+    min-height:100vh;
+  }
+  .wrap{max-width:960px;margin:0 auto;padding-block:34px 72px}
+  a{color:var(--blue);text-decoration:none}
+  a:hover{text-decoration:underline}
+  :focus-visible{outline:2px solid var(--blue);outline-offset:2px;border-radius:6px}
+
+  /* ---- top bar ---- */
+  .top{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .brand{font-family:var(--display);font-weight:800;font-size:1.15rem;letter-spacing:-.02em;display:flex;align-items:center;gap:9px}
+  .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--amber);box-shadow:0 0 12px var(--amber)}
+  .brand b{color:var(--amber)}
+  .status-line{font-family:var(--mono);font-size:.72rem;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+  .status-line .live{color:var(--green)}
+
+  /* ---- hero counter ---- */
+  .hero{margin-top:30px;text-align:center;position:relative}
+  .eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+  .counter{
+    font-family:var(--mono);font-weight:800;
+    font-size:clamp(5rem,26vw,17rem);
+    line-height:.82;letter-spacing:-.02em;
+    margin:.06em 0 0;
+    font-variant-numeric:tabular-nums;
+    background:linear-gradient(180deg,#fff, #cfe0f5 42%, var(--blue) 130%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    text-shadow:0 0 60px rgba(58,151,230,.18);
+  }
+  .counter .m{color:var(--muted);-webkit-text-fill-color:var(--muted);opacity:.55;font-weight:700}
+  .counter.docked{background:linear-gradient(180deg,#fff,#ffd9a8 45%,var(--amber-2) 130%);-webkit-background-clip:text;background-clip:text}
+  .subline{margin:16px auto 0;max-width:44ch;color:var(--muted);font-size:1.02rem;text-wrap:balance}
+  .subline b{color:var(--text);font-weight:600}
+
+  /* ---- stat row ---- */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:34px}
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 16px 14px}
+  .stat .n{font-family:var(--mono);font-weight:800;font-size:1.7rem;font-variant-numeric:tabular-nums;line-height:1}
+  .stat .n.warn{color:var(--amber)}
+  .stat .n.ok{color:var(--green)}
+  .stat .k{margin-top:8px;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+
+  /* ---- year switch + banner ---- */
+  .bar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:44px}
+  .years{display:flex;gap:6px;flex-wrap:wrap}
+  .years button{
+    font-family:var(--mono);font-size:.82rem;font-weight:700;
+    color:var(--muted);background:var(--surface);border:1px solid var(--line);
+    padding:7px 13px;border-radius:99px;cursor:pointer;transition:.15s;
+  }
+  .years button:hover{color:var(--text);border-color:var(--blue-dim)}
+  .years button[aria-current="true"]{background:var(--blue);border-color:var(--blue);color:#04121f}
+  .ledger-h{font-family:var(--display);font-weight:800;font-size:1.25rem;letter-spacing:-.01em}
+
+  .sample-banner{
+    display:none;margin-top:18px;padding:11px 15px;border-radius:10px;
+    background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.32);
+    color:#f3c98a;font-size:.86rem;
+  }
+  .sample-banner.show{display:block}
+  .sample-banner code{font-family:var(--mono);color:var(--amber);background:rgba(245,166,35,.1);padding:1px 6px;border-radius:5px}
+
+  /* ---- ledger ---- */
+  .ledger{margin-top:16px;display:flex;flex-direction:column;gap:12px}
+  .empty{
+    text-align:center;padding:52px 20px;border:1px dashed var(--line);border-radius:var(--radius);
+    color:var(--muted);background:linear-gradient(180deg,rgba(70,192,122,.05),transparent)
+  }
+  .empty .big{font-family:var(--display);font-weight:800;font-size:1.3rem;color:var(--green)}
+
+  .row{
+    display:grid;grid-template-columns:96px 1fr auto;gap:18px;
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px 18px;position:relative;overflow:hidden;
+  }
+  .row::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--amber)}
+  .row.severe::before{background:var(--red)}
+  .row.nocount::before{background:var(--faint)}
+  .when{font-family:var(--mono);font-size:.8rem;color:var(--muted);line-height:1.3;padding-top:2px}
+  .when .d{color:var(--text);font-weight:700;font-size:1.05rem;display:block}
+  .body h3{margin:0 0 5px;font-size:1.02rem;font-weight:600;line-height:1.35;text-wrap:balance}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 9px}
+  .tag{font-family:var(--mono);font-size:.68rem;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:2px 7px;background:var(--bg-2)}
+  .sev{font-family:var(--mono);font-size:.66rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;border-radius:6px;padding:2px 8px}
+  .sev.major{color:var(--amber);background:rgba(245,166,35,.12)}
+  .sev.severe{color:#ff9a9d;background:rgba(229,72,77,.14)}
+  .sev.sample{color:#f3c98a;background:rgba(245,166,35,.12);border:1px dashed rgba(245,166,35,.5)}
+  .summary{color:var(--muted);font-size:.9rem;margin:0}
+  .reddit{margin:9px 0 0;font-size:.9rem;color:var(--text);border-left:2px solid var(--blue-dim);padding-left:11px;font-style:italic}
+  .reddit::before{content:"↗ r/sysadmin  ";font-style:normal;font-family:var(--mono);font-size:.68rem;color:var(--muted);letter-spacing:.04em}
+  .cost{font-family:var(--mono);font-weight:800;font-size:1.05rem;text-align:right;white-space:nowrap;align-self:center;color:var(--amber)}
+  .cost.none{color:var(--faint);font-weight:500;font-size:.78rem;max-width:9ch}
+
+  /* ---- footer / how it works ---- */
+  .how{margin-top:52px;padding-top:26px;border-top:1px solid var(--line);color:var(--muted);font-size:.9rem}
+  .how h2{font-family:var(--display);font-weight:800;color:var(--text);font-size:1.05rem;margin:0 0 10px;letter-spacing:-.01em}
+  .how p{margin:0 0 10px;max-width:70ch}
+  .how code{font-family:var(--mono);color:var(--amber);font-size:.85em}
+  .foot{margin-top:30px;font-family:var(--mono);font-size:.72rem;color:var(--faint);text-align:center;letter-spacing:.03em}
+  .foot .heart{color:var(--red)}
+
+  @media (max-width:560px){
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .row{grid-template-columns:1fr;gap:10px}
+    .row .cost{text-align:left;align-self:start}
+    .when{display:flex;align-items:baseline;gap:8px}
+    .when .d{display:inline}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand"><span class="dot"></span>m365<b>minus</b></div>
+    <div class="status-line"><span class="live">●</span> tracking&nbsp;·&nbsp;north america</div>
+  </header>
+
+  <section class="hero">
+    <div class="eyebrow">Days Microsoft 365 gets to keep this year</div>
+    <div class="counter" id="counter" aria-live="polite"><span class="m">M</span>365</div>
+    <p class="subline" id="subline">One major North American outage. One day off the clock.</p>
+  </section>
+
+  <section class="stats" id="stats"></section>
+
+  <div class="bar">
+    <h2 class="ledger-h" id="ledgerHeading">The ledger</h2>
+    <div class="years" id="years" role="group" aria-label="Select year"></div>
+  </div>
+
+  <div class="sample-banner" id="sampleBanner">
+    Showing <b>sample data</b> for this year — these rows are fictional placeholders so you can see the count work.
+    Edit <code>outages.js</code> to log the real ones (and delete the samples).
+  </div>
+
+  <div class="ledger" id="ledger"></div>
+
+  <section class="how">
+    <h2>How the count works</h2>
+    <p>Every year starts at <code>365</code> (<code>366</code> in a leap year). Each <b>major Microsoft 365 or Azure outage felt across North America</b> — the front-page-of-r/sysadmin kind — subtracts one day. Four qualifying outages and the counter reads <code>M361</code>.</p>
+    <p>The bar is deliberately high. A niche service blipping for ten minutes doesn't count. "Everyone's refreshing the status page and can't work" does. Judgment calls (looking at you, CrowdStrike) get logged with <code>counts:false</code> — on the record, but no day docked.</p>
+  </section>
+
+  <p class="foot">m365minus.com · a petty little uptime counter, made with <span class="heart">♥</span> and mild spite</p>
+</div>
+
+<script src="outages.js"></script>
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var THIS_YEAR = new Date().getFullYear();
+  var data = (window.OUTAGES || []).slice();
+
+  function isLeap(y){ return (y%4===0 && y%100!==0) || y%400===0; }
+  function baseFor(y){ return isLeap(y) ? 366 : 365; }
+  function yearOf(o){ return parseInt(o.date.slice(0,4),10); }
+  function qualifies(o){ return o.counts !== false; }
+
+  // Which years do we have data for? Always include the current year.
+  var years = {};
+  years[THIS_YEAR] = true;
+  data.forEach(function(o){ years[yearOf(o)] = true; });
+  var yearList = Object.keys(years).map(Number).sort(function(a,b){return b-a;});
+
+  var selected = THIS_YEAR;
+
+  var el = {
+    counter: document.getElementById('counter'),
+    subline: document.getElementById('subline'),
+    stats:   document.getElementById('stats'),
+    years:   document.getElementById('years'),
+    ledger:  document.getElementById('ledger'),
+    heading: document.getElementById('ledgerHeading'),
+    banner:  document.getElementById('sampleBanner')
+  };
+
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+  function fmtDate(iso){
+    var p = iso.split('-'), mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return { day: p[2], mon: mo[parseInt(p[1],10)-1], year: p[0] };
+  }
+
+  function forYear(y){
+    return data.filter(function(o){ return yearOf(o)===y; })
+               .sort(function(a,b){ return a.date < b.date ? 1 : -1; });
+  }
+
+  function animateCounter(from,to,docked){
+    el.counter.classList.toggle('docked', docked);
+    var setVal = function(v){ el.counter.innerHTML = '<span class="m">M</span>'+v; };
+    if(reduce || from===to){ setVal(to); return; }
+    var start = performance.now(), dur = 900;
+    function step(now){
+      var t = Math.min(1,(now-start)/dur);
+      var e = 1-Math.pow(1-t,3);
+      setVal(Math.round(from + (to-from)*e));
+      if(t<1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  function renderYears(){
+    el.years.innerHTML = '';
+    yearList.forEach(function(y){
+      var b = document.createElement('button');
+      b.textContent = "'"+String(y).slice(2);
+      b.title = y;
+      if(y===selected) b.setAttribute('aria-current','true');
+      b.addEventListener('click', function(){ selected=y; render(true); });
+      el.years.appendChild(b);
+    });
+  }
+
+  function renderStats(list, base, docked){
+    var severe = list.filter(function(o){ return o.severity==='severe' && qualifies(o); }).length;
+    var logged = list.filter(function(o){ return !qualifies(o); }).length;
+    var remaining = base - docked;
+    var cells = [
+      { n: docked,    k: docked===1?'day docked':'days docked', cls:'warn' },
+      { n: remaining, k: 'days remaining', cls: remaining===base?'ok':'' },
+      { n: severe,    k: 'severe-tier', cls: severe?'warn':'' },
+      { n: logged,    k: "didn't count", cls:'' }
+    ];
+    el.stats.innerHTML = cells.map(function(c){
+      return '<div class="stat"><div class="n '+c.cls+'">'+c.n+'</div><div class="k">'+c.k+'</div></div>';
+    }).join('');
+  }
+
+  function renderLedger(list){
+    var hasSample = list.some(function(o){ return o.example; });
+    el.banner.classList.toggle('show', hasSample);
+
+    if(!list.length){
+      el.ledger.innerHTML =
+        '<div class="empty"><div class="big">Clean sheet.</div>'+
+        'No major North American outages logged for '+selected+' yet. '+
+        (selected===THIS_YEAR ? 'Long may it last.' : 'Or nobody wrote them down.')+'</div>';
+      return;
+    }
+
+    el.ledger.innerHTML = list.map(function(o){
+      var d = fmtDate(o.date);
+      var counts = qualifies(o);
+      var rowCls = 'row' + (o.severity==='severe'?' severe':'') + (!counts?' nocount':'');
+      var sevCls = o.example ? 'sample' : o.severity;
+      var sevText = o.example ? 'sample' : o.severity;
+      var services = (o.services||[]).map(function(s){ return '<span class="tag">'+esc(s)+'</span>'; }).join('');
+      var reddit = o.reddit ? '<p class="reddit">'+esc(o.reddit)+'</p>' : '';
+      var cost = counts
+        ? '<div class="cost">−1 day</div>'
+        : '<div class="cost none">logged · no day docked</div>';
+      return '<article class="'+rowCls+'">'+
+        '<div class="when"><span class="d">'+d.day+'</span>'+d.mon+' '+d.year+'</div>'+
+        '<div class="body">'+
+          '<div class="tags"><span class="sev '+sevCls+'">'+sevText+'</span>'+services+'</div>'+
+          '<h3>'+esc(o.title)+'</h3>'+
+          (o.summary?'<p class="summary">'+esc(o.summary)+'</p>':'')+
+          reddit+
+        '</div>'+
+        cost+
+      '</article>';
+    }).join('');
+  }
+
+  var lastShown = null;
+  function render(animate){
+    var list = forYear(selected);
+    var base = baseFor(selected);
+    var docked = list.filter(qualifies).length;
+    var to = base - docked;
+
+    el.heading.textContent = selected===THIS_YEAR ? 'The ledger · '+selected : 'The ledger · '+selected;
+    el.subline.innerHTML = docked
+      ? '<b>'+docked+'</b> major '+(docked===1?'outage':'outages')+' in '+selected+
+        (selected===THIS_YEAR?', and counting.':'.')
+      : 'Not one qualifying outage in '+selected+'. Suspicious, honestly.';
+
+    animateCounter(animate && lastShown!==null ? lastShown : to, to, docked>0);
+    lastShown = to;
+    renderStats(list, base, docked);
+    renderLedger(list);
+
+    Array.prototype.forEach.call(el.years.children, function(b){
+      if(parseInt(b.title,10)===selected) b.setAttribute('aria-current','true');
+      else b.removeAttribute('aria-current');
+    });
+  }
+
+  renderYears();
+  render(true);
+})();
+</script>
+</body>
+</html>
