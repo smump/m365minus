@@ -54,6 +54,41 @@ It's a static site — just open `index.html` in any browser. (Fonts load from
 Google Fonts, so styling looks best online; the app itself works fully offline and
 falls back to system fonts.)
 
+## Automated outage watching (optional)
+
+Manually logging outages is the default, but there's a helper that watches for
+them so you don't have to refresh Reddit yourself.
+
+`.github/workflows/outage-watch.yml` runs every 30 minutes on GitHub Actions
+(free) and calls `scripts/watch-reddit.mjs`, which scans r/sysadmin, r/msp,
+r/Office365, and r/microsoft for the "everything's down, everyone's posting"
+pattern. When the chatter crosses the bar, it **opens a GitHub Issue assigned to
+you** — GitHub emails it to your inbox — with the top threads, links, a guessed
+service list, and a paste-ready `outages.js` snippet.
+
+It **never edits the counter.** Detection is automated; the judgment call stays
+yours. You confirm by pasting the snippet in and pushing (or close the issue if
+it doesn't clear the bar).
+
+### Setup
+
+1. Create a Reddit "script" app at <https://www.reddit.com/prefs/apps> and note
+   its **client id** and **secret**.
+2. Add them as repository secrets (values are entered by you, never stored in
+   the repo):
+   ```bash
+   gh secret set REDDIT_CLIENT_ID --repo smump/m365minus
+   gh secret set REDDIT_CLIENT_SECRET --repo smump/m365minus
+   ```
+3. Test the pipeline without waiting for a real outage:
+   ```bash
+   gh workflow run "Outage watch (Reddit)" --repo smump/m365minus -f test_mode=true
+   ```
+   You should get an emailed GitHub Issue titled `[TEST] Possible major M365 outage`.
+
+Detection thresholds (how popular the chatter must be) live in the `CONFIG`
+block at the top of `scripts/watch-reddit.mjs` — tune them to taste.
+
 ## License
 
 [MIT](LICENSE) — do whatever you like with it.

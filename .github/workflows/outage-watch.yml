@@ -1,0 +1,44 @@
+name: Outage watch (Reddit)
+
+# Scans sysadmin subreddits for major M365 outage chatter and, when it crosses
+# the bar, opens a GitHub Issue assigned to you (GitHub emails it to you).
+# It never edits the counter — you make the final call.
+
+on:
+  schedule:
+    # Every 30 minutes. GitHub cron is best-effort and may run a little late.
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+    inputs:
+      test_mode:
+        description: "File a sample candidate issue to test the email/issue pipeline"
+        type: boolean
+        default: false
+
+permissions:
+  issues: write
+  contents: read
+
+concurrency:
+  group: outage-watch
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Scan Reddit for major M365 outage chatter
+        env:
+          REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+          REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          ISSUE_ASSIGNEE: smump
+          TEST_MODE: ${{ inputs.test_mode }}
+        run: node scripts/watch-reddit.mjs
